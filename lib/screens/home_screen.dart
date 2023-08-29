@@ -31,39 +31,38 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Welcome'),
-      ),
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              SizedBox(
-                height: 150,
-                child: Image.asset(
-                  "assets/logo.png",
-                  fit: BoxFit.contain,
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                  height: 150,
+                  child: Image.asset(
+                    "assets/logo.png",
+                    fit: BoxFit.contain,
+                  ),
                 ),
-              ),
-              Text("Welcome Back"),
-              SizedBox(height: 10),
-              Text(
-                "${loggedInUser.fullName}",
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
-              ),
-              Text("${loggedInUser.email}"),
-              SizedBox(height: 10),
-              ActionChip(
-                label: Text("Logout"),
-                onPressed: () {
-                  logout(context);
-                },
-              ),
-            ],
+                Text("Welcome Back"),
+                SizedBox(height: 10),
+                Text(
+                  "${loggedInUser.fullName}",
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.w500),
+                ),
+                Text("${loggedInUser.email}"),
+                SizedBox(height: 10),
+                ActionChip(
+                  label: Text("Logout"),
+                  onPressed: () {
+                    logout(context);
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
