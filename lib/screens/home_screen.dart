@@ -21,7 +21,22 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              SizedBox(height: 100, child: ,)
+              SizedBox(
+                height: 150,
+                child: Image.asset(
+                  "assets/logo.png",
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Text("Welcome Back"),
+              SizedBox(height: 10),
+              Text("Name"),
+              Text("Email"),
+              SizedBox(height: 10),
+              ActionChip(
+                label: Text("Logout"),
+                onPressed: () {},
+              ),
             ],
           ),
         ),
