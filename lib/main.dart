@@ -1,4 +1,5 @@
 import 'package:e_wallet/screens/login_screen.dart';
+import 'package:e_wallet/screens/register_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -18,6 +19,6 @@ class MyApp extends StatelessWidget {
             seedColor: Color.fromRGBO(242, 174, 100, 0.5),
           ),
         ),
-        home: const LoginScreen());
+        home: const RegisterScreen());
   }
 }
