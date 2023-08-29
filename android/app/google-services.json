@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "526592260035",
+    "project_id": "ewallet-auth-d0c68",
+    "storage_bucket": "ewallet-auth-d0c68.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:526592260035:android:0d767b821a8afa90656f76",
+        "android_client_info": {
+          "package_name": "com.abedsully.e_wallet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "526592260035-f776mv3edn13v6pab9k9949pobablbbn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-yOK3Mt3Oo2oo33xH8_EalmlWKmdx38A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "526592260035-f776mv3edn13v6pab9k9949pobablbbn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
