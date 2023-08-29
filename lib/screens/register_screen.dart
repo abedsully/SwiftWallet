@@ -1,5 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_wallet/screens/home_screen.dart';
 import 'package:e_wallet/screens/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+import '../model/user_model.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,12 +25,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final confirm = new TextEditingController();
   bool _obscureText = true;
 
+  final _auth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     final fullNameField = TextFormField(
       autofocus: false,
       controller: fullName,
-      // validator: (value) {},
+      validator: (value) {
+        RegExp regex = new RegExp(r'^.{5,}$');
+        if (value!.isEmpty) {
+          return ("Full Name can't be empty");
+        }
+
+        if (!regex.hasMatch(value)) {
+          return ("Full Name should at least be 5 characters");
+        }
+      },
       onSaved: (value) {
         fullName.text = value!;
       },
@@ -41,7 +59,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final usernameField = TextFormField(
       autofocus: false,
       controller: username,
-      // validator: (value) {},
+      validator: (value) {
+        RegExp regex = new RegExp(r'^.{5,}$');
+        if (value!.isEmpty) {
+          return ("Please Enter Your Full Name");
+        }
+
+        if (!regex.hasMatch(value)) {
+          return ("Full Name should at least be 5 characters");
+        }
+
+        return null;
+      },
       onSaved: (value) {
         username.text = value!;
       },
@@ -60,7 +89,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       autofocus: false,
       controller: email,
       keyboardType: TextInputType.emailAddress,
-      // validator: (value) {},
+      validator: (value) {
+        if (value!.isEmpty) {
+          return ("Please Enter Your Email");
+        }
+        if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]").hasMatch(value)) {
+          return ("Please Enter a valid email");
+        }
+        return null;
+      },
       onSaved: (value) {
         email.text = value!;
       },
@@ -82,7 +119,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
             autofocus: false,
             controller: password,
             obscureText: _obscureText,
-            // validator: (value) {},
+            validator: (value) {
+              RegExp regex = new RegExp(r'^.{6,}$');
+              if (value!.isEmpty) {
+                return ("Password is required for login");
+              }
+              if (!regex.hasMatch(value)) {
+                return ("Enter Valid Password(Min. 6 Character)");
+              }
+            },
             onSaved: (value) {
               password.text = value!;
             },
@@ -118,7 +163,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
             autofocus: false,
             controller: confirm,
             obscureText: _obscureText,
-            // validator: (value) {},
+            validator: (value) {
+              if (password.value != confirm.value) {
+                return ("Password don't match");
+              }
+
+              return null;
+            },
             onSaved: (value) {
               confirm.text = value!;
             },
@@ -154,7 +205,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       child: MaterialButton(
         padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
         minWidth: double.infinity,
-        onPressed: () {},
+        onPressed: () {
+          signUp(email.text, password.text);
+        },
         child: Text(
           'Register',
           textAlign: TextAlign.center,
@@ -168,60 +221,95 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: Colors.white,
-          ),
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => LoginScreen(),
+        appBar: AppBar(
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_rounded,
+              color: Colors.white,
             ),
-          ),
-        ),
-      ),
-      backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Container(
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(36.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    SizedBox(
-                      height: 200,
-                      child: Image.asset(
-                        "assets/logo.png",
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    SizedBox(height: 30),
-                    fullNameField,
-                    SizedBox(height: 15),
-                    usernameField,
-                    SizedBox(height: 15),
-                    emailField,
-                    SizedBox(height: 15),
-                    passwordField,
-                    SizedBox(height: 15),
-                    confirmPasswordField,
-                    SizedBox(height: 30),
-                    registerButton,
-                  ],
-                ),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LoginScreen(),
               ),
             ),
           ),
         ),
-      ),
-    );
+        backgroundColor: Colors.white,
+        body: Center(
+          child: SingleChildScrollView(
+            child: Container(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(36.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(
+                        height: 200,
+                        child: Image.asset(
+                          "assets/logo.png",
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      SizedBox(height: 30),
+                      fullNameField,
+                      SizedBox(height: 15),
+                      usernameField,
+                      SizedBox(height: 15),
+                      emailField,
+                      SizedBox(height: 15),
+                      passwordField,
+                      SizedBox(height: 15),
+                      confirmPasswordField,
+                      SizedBox(height: 30),
+                      registerButton,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ));
+  }
+
+  void signUp(String email, String password) async {
+    if (_formKey.currentState!.validate()) {
+      await _auth
+          .createUserWithEmailAndPassword(email: email, password: password)
+          .then((value) => {postDetailsToFireStore()})
+          .catchError((e) {
+        Fluttertoast.showToast(msg: e!.message);
+      });
+    }
+  }
+
+  postDetailsToFireStore() async {
+    FirebaseFirestore firebaseFirestore =
+        FirebaseFirestore.instance; // to call firestore
+    User? user = _auth.currentUser; // to call user model
+
+    UserModel userModel = UserModel(); // sending the values
+
+    userModel.email = user!.email;
+    userModel.uid = user.uid;
+    userModel.fullName = fullName.text;
+    userModel.username = username.text;
+
+    await firebaseFirestore
+        .collection("users")
+        .doc(user.uid)
+        .set(userModel.toMap());
+
+    Fluttertoast.showToast(msg: "Account created successfully");
+
+    Navigator.pushAndRemoveUntil(
+        (context),
+        MaterialPageRoute(builder: (contenxt) => HomeScreen()),
+        (route) => false);
   }
 }
