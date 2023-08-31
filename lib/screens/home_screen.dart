@@ -28,6 +28,68 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Widget balanceCard() {
+    return Container(
+      height: 140,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: Color.fromRGBO(245, 152, 53, 0.498),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "${loggedInUser.balance}",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 28),
+            ),
+            SizedBox(height: 4),
+            Text(
+              "Total Balance",
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Row _buildCategories() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: <Widget>[
+        MaterialButton(
+          onPressed: () {
+            print('Top Up');
+          },
+          child: _buildCategoryCard(
+            bgColor: Color(0xffcfe3ff),
+            iconColor: Color(0xff3f63ff),
+            iconData: Icons.add,
+            text: "Top Up",
+          ),
+        ),
+        MaterialButton(
+          onPressed: () {
+            print('Send');
+          },
+          child: _buildCategoryCard(
+            bgColor: Color(0xfffbcfcf),
+            iconColor: Color(0xfff54142),
+            iconData: Icons.send,
+            text: "Send",
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,28 +101,36 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                SizedBox(
-                  height: 150,
-                  child: Image.asset(
-                    "assets/logo.png",
-                    fit: BoxFit.contain,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      height: 50,
+                      child: Image.asset(
+                        "assets/logo.png",
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    ActionChip(
+                      label: Text("Logout"),
+                      onPressed: () {
+                        logout(context);
+                      },
+                    ),
+                  ],
                 ),
-                Text("Welcome Back"),
-                SizedBox(height: 10),
+                SizedBox(height: 30),
                 Text(
-                  "${loggedInUser.fullName}",
+                  "Welcome Back, ${loggedInUser.fullName}",
                   style: TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.w500),
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700),
                 ),
-                Text("${loggedInUser.email}"),
-                SizedBox(height: 10),
-                ActionChip(
-                  label: Text("Logout"),
-                  onPressed: () {
-                    logout(context);
-                  },
-                ),
+                SizedBox(height: 15),
+                balanceCard(),
+                SizedBox(height: 15),
+                _buildCategories(),
               ],
             ),
           ),
@@ -73,5 +143,28 @@ class _HomeScreenState extends State<HomeScreen> {
     await FirebaseAuth.instance.signOut();
     Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => LoginScreen()));
+  }
+
+  Column _buildCategoryCard(
+      {Color? bgColor, Color? iconColor, IconData? iconData, String? text}) {
+    return Column(
+      children: <Widget>[
+        Container(
+          height: 50,
+          width: 50,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Icon(
+            iconData,
+            color: iconColor,
+            size: 36,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(text!),
+      ],
+    );
   }
 }

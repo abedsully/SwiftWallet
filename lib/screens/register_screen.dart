@@ -23,6 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final email = new TextEditingController();
   final password = new TextEditingController();
   final confirm = new TextEditingController();
+  final balance = 0;
   bool _obscureText = true;
 
   final _auth = FirebaseAuth.instance;
@@ -299,6 +300,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     userModel.uid = user.uid;
     userModel.fullName = fullName.text;
     userModel.username = username.text;
+    userModel.balance = 0;
 
     await firebaseFirestore
         .collection("users")
