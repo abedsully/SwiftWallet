@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_wallet/model/user_model.dart';
+import 'package:e_wallet/screens/convert_idr.dart';
 import 'package:e_wallet/screens/login_screen.dart';
+import 'package:e_wallet/screens/topUp_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -43,10 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "${loggedInUser.balance}",
+              CurrencyFormat.convertToIdr(loggedInUser.balance ?? 0, 2),
               style: TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w500,
                   fontSize: 28),
             ),
             SizedBox(height: 4),
@@ -66,7 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: <Widget>[
         MaterialButton(
           onPressed: () {
-            print('Top Up');
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => TopUpScreen()));
           },
           child: _buildCategoryCard(
             bgColor: Color(0xffcfe3ff),
