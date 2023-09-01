@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_wallet/model/user_model.dart';
+import 'package:e_wallet/screens/home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -11,41 +12,111 @@ class SendScreen extends StatefulWidget {
 }
 
 class _SendScreenState extends State<SendScreen> {
+  final _formKey = GlobalKey<FormState>();
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
   List<UserModel> otherUsers = [];
+  final TextEditingController transferNominalController =
+      TextEditingController();
 
   @override
   void initState() {
     super.initState();
     fetchUserData();
+    if (user != null) {
+      fetchLoggedInUserBalance(user!.uid);
+    }
   }
 
-  // Function to fetch data of other users
+  Future<void> fetchLoggedInUserBalance(String uid) async {
+    DocumentReference userDoc =
+        FirebaseFirestore.instance.collection('users').doc(uid);
+
+    DocumentSnapshot docSnapshot = await userDoc.get();
+
+    if (docSnapshot.exists) {
+      Map<String, dynamic>? userData =
+          docSnapshot.data() as Map<String, dynamic>?;
+
+      if (userData != null) {
+        int userBalance = userData['balance'] ?? 0;
+
+        setState(() {
+          loggedInUser.balance = userBalance;
+        });
+      }
+    }
+  }
+
   Future<void> fetchUserData() async {
-    // Reference to the Firestore collection containing user data
     CollectionReference usersCollection =
         FirebaseFirestore.instance.collection('users');
 
-    // Query Firestore to retrieve data of other users (you can customize the query as needed)
     QuerySnapshot querySnapshot = await usersCollection.get();
 
-    // Iterate through the documents in the query result
+    otherUsers.clear();
+
     for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
-      // Access user data from the document
       Map<String, dynamic> userData =
           documentSnapshot.data() as Map<String, dynamic>;
 
-      // Create UserModel objects and add them to the list
+      String uid = documentSnapshot.id;
+
       UserModel otherUser = UserModel(
-        // Customize this based on your user model structure
         username: userData['username'],
+        uid: uid,
+        balance: userData['balance'] ?? 0,
       );
       otherUsers.add(otherUser);
     }
 
-    // Update the UI when data is fetched
     setState(() {});
+  }
+
+  void sendMoneyToUser(UserModel recipient) async {
+    if (user != null) {
+      String enteredValue = transferNominalController.text;
+
+      int transferAmount = int.tryParse(enteredValue) ?? 0;
+
+      if (loggedInUser.balance != null &&
+          loggedInUser.balance! >= transferAmount) {
+        int updatedBalance = loggedInUser.balance! - transferAmount;
+
+        int recipientUpdatedBalance = (recipient.balance!) + transferAmount;
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user!.uid)
+            .update({'balance': updatedBalance});
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(recipient.uid)
+            .update({'balance': recipientUpdatedBalance});
+
+        setState(() {
+          loggedInUser.balance = updatedBalance;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Money sent successfully!'),
+          ),
+        );
+
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+            (route) => false);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Insufficient balance to send money.'),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -55,7 +126,7 @@ class _SendScreenState extends State<SendScreen> {
         title: Text("Send Money"),
       ),
       body: ListView(
-        children: otherUsers.map((user) {
+        children: otherUsers.map((recipient) {
           return Container(
             margin: EdgeInsets.all(20),
             height: 100,
@@ -73,12 +144,67 @@ class _SendScreenState extends State<SendScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        "${user.username}",
+                        "${recipient.username}",
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       ElevatedButton(
-                          onPressed: () {}, child: Text('Send Money')),
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  content: Stack(
+                                    clipBehavior: Clip.none,
+                                    children: <Widget>[
+                                      Positioned(
+                                        right: -40.0,
+                                        top: -40.0,
+                                        child: InkResponse(
+                                          onTap: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: CircleAvatar(
+                                            child: Icon(Icons.close),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        ),
+                                      ),
+                                      Form(
+                                        key: _formKey,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: <Widget>[
+                                            Text('Enter Amount'),
+                                            Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: TextFormField(
+                                                controller:
+                                                    transferNominalController,
+                                                decoration: InputDecoration(
+                                                    hintText: 'Input Nominal'),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: ElevatedButton(
+                                                child: Text("Submit"),
+                                                onPressed: () {
+                                                  sendMoneyToUser(recipient);
+                                                },
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              });
+                        },
+                        child: Text('Send Money'),
+                      ),
                     ],
                   ),
                 ],
