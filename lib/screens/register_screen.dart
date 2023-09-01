@@ -67,7 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }
 
         if (!regex.hasMatch(value)) {
-          return ("Full Name should at least be 5 characters");
+          return ("Username should at least be 5 characters");
         }
 
         return null;
@@ -280,13 +280,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void signUp(String email, String password) async {
     if (_formKey.currentState!.validate()) {
-      await _auth
-          .createUserWithEmailAndPassword(email: email, password: password)
-          .then((value) => {postDetailsToFireStore()})
-          .catchError((e) {
-        Fluttertoast.showToast(msg: e!.message);
-      });
+      // Check if the username is unique before registering
+      bool isUsernameUnique = await isUsernameAvailable(username.text);
+
+      if (isUsernameUnique) {
+        await _auth
+            .createUserWithEmailAndPassword(email: email, password: password)
+            .then((value) => postDetailsToFireStore())
+            .catchError((e) {
+          Fluttertoast.showToast(msg: e!.message);
+        });
+      } else {
+        Fluttertoast.showToast(msg: "Username is already taken");
+      }
     }
+  }
+
+  Future<bool> isUsernameAvailable(String username) async {
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+    final query = await firebaseFirestore
+        .collection("users")
+        .where("username", isEqualTo: username)
+        .get();
+    return query.docs.isEmpty;
   }
 
   postDetailsToFireStore() async {

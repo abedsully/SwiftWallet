@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_wallet/model/user_model.dart';
 import 'package:e_wallet/screens/convert_idr.dart';
 import 'package:e_wallet/screens/login_screen.dart';
+import 'package:e_wallet/screens/send_screen.dart';
 import 'package:e_wallet/screens/topUp_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -80,7 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         MaterialButton(
           onPressed: () {
-            print('Send');
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => SendScreen()));
           },
           child: _buildCategoryCard(
             bgColor: Color(0xfffbcfcf),
