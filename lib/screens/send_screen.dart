@@ -1,121 +1,92 @@
-import 'package:e_wallet/screens/home_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_wallet/model/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../model/user_model.dart';
-
-class UserModels {
-  final String? username;
-  final int? balance;
-
-  UserModels(this.username, this.balance);
-}
-
-class UserCard extends StatelessWidget {
-  final UserModels user;
-
-  UserCard(this.user);
+class SendScreen extends StatefulWidget {
+  const SendScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          Text(user.username ?? ""),
-          // Add more widgets to display additional user information
-        ],
-      ),
-    );
-  }
+  State<SendScreen> createState() => _SendScreenState();
 }
 
-class SendScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          leading: IconButton(
-            onPressed: () => Navigator.push(
-                context, MaterialPageRoute(builder: (context) => HomeScreen())),
-            icon: Icon(Icons.arrow_back),
-            color: Colors.white,
-          ),
-          title: Text('Send Screen'),
-        ),
-        body: UserList(),
-      ),
-    );
-  }
-}
-
-class UserList extends StatefulWidget {
-  @override
-  _UserListState createState() => _UserListState();
-}
-
-class _UserListState extends State<UserList> {
+class _SendScreenState extends State<SendScreen> {
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
+  List<UserModel> otherUsers = [];
 
   @override
   void initState() {
     super.initState();
-    FirebaseFirestore.instance
-        .collection("users")
-        .doc(user!.uid)
-        .get()
-        .then((value) {
-      this.loggedInUser = UserModel.fromMap(value.data());
-      setState(() {});
-    });
+    fetchUserData();
+  }
+
+  // Function to fetch data of other users
+  Future<void> fetchUserData() async {
+    // Reference to the Firestore collection containing user data
+    CollectionReference usersCollection =
+        FirebaseFirestore.instance.collection('users');
+
+    // Query Firestore to retrieve data of other users (you can customize the query as needed)
+    QuerySnapshot querySnapshot = await usersCollection.get();
+
+    // Iterate through the documents in the query result
+    for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
+      // Access user data from the document
+      Map<String, dynamic> userData =
+          documentSnapshot.data() as Map<String, dynamic>;
+
+      // Create UserModel objects and add them to the list
+      UserModel otherUser = UserModel(
+        // Customize this based on your user model structure
+        username: userData['username'],
+      );
+      otherUsers.add(otherUser);
+    }
+
+    // Update the UI when data is fetched
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').snapshots(),
-      builder: (context, snapshot) {
-        List<UserModels> users = snapshot.data!.docs.map((doc) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          return UserModels(data['username'], data['balance']);
-        }).toList();
-
-        List<Widget> userCards = users.map((user) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Send Money"),
+      ),
+      body: ListView(
+        children: otherUsers.map((user) {
           return Container(
+            margin: EdgeInsets.all(20),
             height: 100,
             width: double.infinity,
-            margin: EdgeInsets.all(10),
-            padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
               color: Color.fromRGBO(245, 152, 53, 0.498),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Username: ${user.username ?? "a"}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black,
+            child: Padding(
+              padding: EdgeInsets.all(25),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "${user.username}",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      ElevatedButton(
+                          onPressed: () {}, child: Text('Send Money')),
+                    ],
                   ),
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(onPressed: () {}, child: Text('Send Money')),
-              ],
+                ],
+              ),
             ),
           );
-        }).toList();
-
-        return SingleChildScrollView(
-          child: Column(
-            children: userCards,
-          ),
-        );
-      },
+        }).toList(),
+      ),
     );
   }
 }
