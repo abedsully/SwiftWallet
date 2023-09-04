@@ -62,15 +62,17 @@ class _SendScreenState extends State<SendScreen> {
 
       String uid = documentSnapshot.id;
 
-      UserModel otherUser = UserModel(
-        username: userData['username'],
-        uid: uid,
-        balance: userData['balance'] ?? 0,
-      );
-      otherUsers.add(otherUser);
-    }
+      if (uid != user?.uid) {
+        UserModel otherUser = UserModel(
+          username: userData['username'],
+          uid: uid,
+          balance: userData['balance'] ?? 0,
+        );
+        otherUsers.add(otherUser);
+      }
 
-    setState(() {});
+      setState(() {});
+    }
   }
 
   void sendMoneyToUser(UserModel recipient) async {
